@@ -248,6 +248,11 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+
     // Attach the texture to the framebuffer
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mapTexture, 0);
 
@@ -296,6 +301,7 @@ int main()
     randy = rand();
     mapShader.setFloat("u_time", randy);
     mapShader.setVec2("u_resolution", MapWidth, MapHeight);
+    mapShader.setBool("colorMap", false);
 
 
     //Set lightShader Params
@@ -320,8 +326,6 @@ int main()
     // Read the pixel data from the FBO
     glReadPixels(0, 0, MapWidth, MapHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-
-    stbi_write_png("map.png", MapWidth, MapHeight, 4, pixels, MapWidth * 4);
     
     // Iterate through each pixel
     for (int y = 0; y < MapHeight; y++) {
@@ -337,7 +341,18 @@ int main()
         }
     }
 
+    mapShader.setBool("colorMap", true);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glReadPixels(0, 0, MapWidth, MapHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+
+    /*stbi_write_png("Resources/Textures/map.png", MapWidth, MapHeight, 4, pixels, MapWidth * 4);*/
+    stbi_write_jpg("Resources/Textures/map.jpg", MapWidth, MapHeight, 4, pixels, 100);
+
+    glDeleteTextures(1, &mapTexture);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 
 
@@ -386,8 +401,9 @@ int main()
 
     for (int i = 0; i < mapVerts.size(); i++)
     {
-        mapVerts[i].texcoord[0] = i % MapWidth;
-        mapVerts[i].texcoord[1] = i / MapHeight;
+       // std::cout << i << " results in: " <<  (float)(i % MapWidth)/(float)MapWidth<< std::endl;
+        mapVerts[i].texcoord[0] = (float)(i % MapWidth)/(float)MapWidth;
+        mapVerts[i].texcoord[1] = 1.0f - (float)(i / MapHeight)/ (float)MapHeight;
     }
 
     for (int i = 0; i < mapIndices.size(); i +=3)
@@ -416,16 +432,17 @@ int main()
     camera.setPoistion(glm::vec3(0.0f, pos.z/10 , 0.0f));
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Texture texture1("Resources/Textures/crate.jpg", GL_IMAGE_2D);
+    Texture texture1("Resources/Textures/Crate.jpg", GL_IMAGE_2D);
     Texture texture2("Resources/Textures/checkered.png", GL_IMAGE_2D);
     Texture texture3("Resources/Textures/Floor.jpg", GL_IMAGE_2D);
+    Texture textureMap("Resources/Textures/map.jpg", GL_IMAGE_2D);
 
 
-    Material mat("Stone", texture3.getID(), texture3.getID(), texture3.getID());
+    Material mat("Map", textureMap.getID(), textureMap.getID(), textureMap.getID());
     Material mat1("Crate", texture1.getID(), texture1.getID(), texture1.getID());
     Material mat2("Stone", texture3.getID(), texture3.getID(), texture3.getID());
 
-    Mesh mapMesh("Map", mapVerts, mapVertCount, mapIndices, mapIndexCount, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, { 1,1,1 });
+    Mesh mapMesh("Map", mapVerts, mapVertCount, mapIndices, mapIndexCount, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, { 1,1,1 },mat);
 
     Mesh Mesh1("Crate", boxVerts, 36, NULL, 0, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, { 1,1,1 }, mat1);
     Mesh Mesh2("Ground", planeVerts, 4, planeIndices, 6, { 0,0,0 }, { 0,0,0 }, { 0,0,0 }, { 1,1,1 }, mat2);
@@ -442,8 +459,8 @@ int main()
     Mesh2.setScale(glm::vec3(100.f, 1.f, 100.f));
     Mesh3.setScale(glm::vec3(0.5f, 0.5f, 0.5f));
     Mesh4.setPosition(glm::vec3(0.0f, 1.5f, 0.0f));
-    mapMesh.setScale(glm::vec3(10.0f, 1.0f, 10.0f));
-    mapMesh.setPosition(glm::vec3(-(int)(MapWidth*10/2), 0.5f, -(int)(MapHeight*10/2)));
+    mapMesh.setScale(glm::vec3(1.0f, 0.5f, 1.0f));
+    mapMesh.setPosition(glm::vec3(-(int)(MapWidth/2), 0.5f, -(int)(MapHeight/2)));
     Model mod1(glm::vec3(0.0f, 0.0f, 0.0f), meshes1);
     Model mod2(glm::vec3(0.0f, 0.0f, 0.0f), meshes2);
     Model mod3(glm::vec3(0.0f, 0.0f, 0.0f), meshes3);
@@ -454,6 +471,7 @@ int main()
     texture1.bind(texture1.getID());
     texture2.bind(texture2.getID());
     texture3.bind(texture3.getID());
+    textureMap.bind(textureMap.getID());
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -517,8 +535,8 @@ int main()
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //Render our Meshes
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        mod1.render(&ourShader);
-        mod2.render(&ourShader);
+        //mod1.render(&ourShader);
+        //mod2.render(&ourShader);
         mod4.render(&ourShader);
 
 

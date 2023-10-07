@@ -62,7 +62,7 @@ public:
         height = h;
         Position = position;
         WorldUp = up;
-        RollSpeed =5.0f;
+        RollSpeed =2.5f;
         Right = glm::vec3(1, 0, 0);
         Up = glm::vec3(0, 1, 0);
         Projection = glm::perspective(glm::radians(Zoom), (float)width / (float)height, 0.1f, 10000.0f);
@@ -75,7 +75,7 @@ public:
         height = h;
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
-        RollSpeed = 5.0f;
+        RollSpeed = 2.5f;
         Right = glm::vec3(1, 0, 0);
         Up = glm::vec3(0, 1, 0);
         Projection = glm::perspective(glm::radians(Zoom), (float)width / (float)height, 0.1f, 10000.0f);
@@ -177,7 +177,6 @@ public:
     void setSpeed(float val)
     {
         MovementSpeed = val;
-        RollSpeed = 5.0f;
     }
 
     float getSpeed()
@@ -207,7 +206,7 @@ public:
     {
         width = w;
         height = h;
-        Projection = glm::perspective(glm::radians(Zoom), (float)width / (float)height, 0.1f, 100000.0f);
+        Projection = glm::perspective(glm::radians(Zoom), (float)width / (float)height, 0.1f, 10000.0f);
 
 
     }
